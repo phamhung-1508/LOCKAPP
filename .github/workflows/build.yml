@@ -1,0 +1,35 @@
+name: Build Single Windows EXE
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller psutil pywin32
+
+      - name: Build Single EXE with PyInstaller
+        run: |
+          pyinstaller --noconfirm --onefile --noconsole --uac-admin --name "AppTimeGuard" --hidden-import=win32timezone app_limiter.py
+
+      - name: Upload Artifact EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: AppTimeGuard-Windows-EXE
+          path: dist/AppTimeGuard.exe
+          if-no-files-found: error
